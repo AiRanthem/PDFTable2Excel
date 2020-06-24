@@ -93,7 +93,7 @@ class BaseExtractor:
             if table is None:
                 continue
             # extract a table into list of strings
-            table = [[re.sub(r"\s", "", grid) for grid in row] for row in table]
+            table = [[re.sub(r"\s", "", grid) for grid in row] for row in table if None not in row]
 
             for row in table:
                 # find a table head
@@ -101,7 +101,11 @@ class BaseExtractor:
                     table_head = row
                     continue
                 # find a new table
-                if int(row[0]) == 1:
+                try:
+                    x = int(row[0])
+                except:
+                    continue
+                if x == 1:
                     # record the last table
                     if temp:
                         ret.append(temp)
