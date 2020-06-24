@@ -53,23 +53,27 @@ class ExtractorDirector:
         print("开始解析数据")
         ret = []
         for i, e in enumerate(self.extractors):
-            titles = e.parse_title()
-            tables = e.parse_table()
-            if tables:
-                for j, table in enumerate(tables):
-                    table["title"] = titles[j]
-                    match = re.search(r"“(.*)”", titles[j])
-                    if match:
-                        table["project"] = match.group(1)
-                ret.append(tables)
-            else:
-                logging.warning("文件解析失败(表格无法读取):\n{}".format(self.files[i]))
-            # verify table rows
-            for table in tables:
-                all_orders = sorted(list(map(int, table["order"])))
-                for j in range(1, all_orders[-1] + 1):
-                    if j not in all_orders:
-                        logging.warning("表格行解析失败(可能是由于改行格式特殊或不封闭等):\nline [{}] of table [{}]\nin file [{}]"
-                                        .format(j, table["title"], self.files[i]))
+            try:
+                titles = e.parse_title()
+                tables = e.parse_table()
+                if tables:
+                    for j, table in enumerate(tables):
+                        table["title"] = titles[j]
+                        match = re.search(r"“(.*)”", titles[j])
+                        if match:
+                            table["project"] = match.group(1)
+                    ret.append(tables)
+                else:
+                    logging.warning("文件解析失败(表格无法读取):\n{}".format(self.files[i]))
+                # verify table rows
+                for table in tables:
+                    all_orders = sorted(list(map(int, table["order"])))
+                    for j in range(1, all_orders[-1] + 1):
+                        if j not in all_orders:
+                            logging.warning("表格行解析失败(可能是由于改行格式特殊或不封闭等):\nline [{}] of table [{}]\nin file [{}]"
+                                            .format(j, table["title"], self.files[i]))
+            except Exception as e:
+                logging.error("解析文件出现致命错误。文件名: {}".format(self.files[i]))
+                print(e)
         print("所有PDF表格均解析完毕")
         return ret
